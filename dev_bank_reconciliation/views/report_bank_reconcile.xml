@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+	<data>
+		<template id="report_bank_reconcile_view">
+			<t t-call="web.basic_layout">
+				<!-- <t t-set="o" t-value="o.with_context(lang=lang)" /> -->
+				<div class="page">
+					<div class="header o_boxed_header" style="border-bottom: none !important">
+						<img t-if="o.company_id.logo" t-att-src="image_data_uri(o.company_id.logo)" alt="Logo" style="height:70px;width=2000px"/><br/>
+						<b>
+							<span t-esc="o.company_id.name"/>
+							<t t-if="o.company_id.company_registry">
+								<span t-esc="o.company_id.company_registry" style="font-size:8px"/>
+							</t>
+							<br/>
+							<span t-esc="o.company_id.street"/>, <span t-esc="o.company_id.street2"/>, <span t-esc="o.company_id.zip"/> <span t-esc="o.company_id.city"/>, <span t-esc="o.company_id.state_id.name"/>, <span t-esc="o.company_id.country_id.name"/>.
+							<br/>
+							<t t-if="o.company_id.phone">
+								TEL. : <span t-esc="o.company_id.phone"/>
+							</t>
+							&#160; &#160; EMAIL : <span t-esc="o.company_id.email"/> &#160; &#160; WEBSITE : <span t-esc="o.company_id.website"/>  
+							<br/>
+							<span style="font-size:11px">GST Reg. No. : <span t-esc="o.company_id.vat"/></span>
+						</b>
+
+					</div>
+					<div class="oe_structure"/>
+					<div class="text-center" style="font-size:12px">
+						<strong>Bank Reconcilation Statement </strong><br/>
+						<strong>AS At  </strong><span t-field="o.end_date" /><br/>
+						<strong>Bank Code </strong> <span t-field="o.journal_id.code"/><br/>
+						<strong>Bank Description </strong> <span t-field="o.journal_id.name"/><br/>
+					</div>
+					<table style="width:100%;" class='text-right'>
+						<tr>
+							<td style="width:85%"></td>
+							<td style="width:15%;border-bottom:1px solid #ccc"><b>Amount</b></td>
+						</tr>
+						<tr>
+							<td style="width:70%" class='text-right'><b>Balance As Per Bank Statement(<span t-field="o.company_id.currency_id.name"/>)</b></td>
+							<td style="width:30%">
+								<span t-field="o.start_balance"/>  <span t-field="o.company_id.currency_id.symbol"/>
+							</td>
+						</tr>
+					</table>
+					<br/>
+					<div class="row mt16 mb32"/>
+					<table style="width:100%;font-size:12px">
+						<tr style="font-weight:bold;border-bottom:1px solid #000">
+							<td style="width:15%">Date</td>
+							<td style="width:20%">Ref</td>
+							<td style="width:35%">Description</td>
+							<td class="text-right" style="width:15%">Debit</td>
+							<td class="text-right" style="width:15%">Credit</td>
+						</tr>
+						<tr>
+							<t>
+								<td colspan="5" style="color:#FFF"><br/></td>
+							</t>
+						</tr>
+						<t t-set="reconsile_entry" t-value="o.journal_entry_ids.filtered(lambda x : x.is_bank_reconcile)"/>
+						<t t-if="reconsile_entry">
+							<tr>
+								<td colspan="5"><b>Add : Deposits Not Credited By Bank</b></td>
+							</tr>
+							<tr>
+								<t>
+									<td colspan="5" style="color:#FFF"><br/></td>
+								</t>
+							</tr>
+							<tr t-foreach="reconsile_entry" t-as="l" >
+								<td style="width:15%"> <span t-esc="l.date"/></td>
+								<td style="width:20%"> <span t-esc="l.ref"/></td>
+								<td style="width:35%"> <span t-esc="l.name"/></td>
+								<td class="text-right" style="width:15%"> 
+									<span t-esc="l.debit"/> <span t-field="o.company_id.currency_id.symbol"/> 
+								</td>
+								<td class="text-right" style="width:15%"> 
+									<span t-esc="l.credit" /> <span t-field="o.company_id.currency_id.symbol"/>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3" ></td>
+								<td class="text-right" style="border-top:1px solid #ccc"> <b><span t-esc="o.get_total_debit_reconcile()"/>  <span t-field="o.company_id.currency_id.symbol"/></b></td>
+								<td class="text-right" style="border-top:1px solid #ccc"> <b><span t-esc="o.get_total_credit_reconcile()"/>  <span t-field="o.company_id.currency_id.symbol"/></b></td>
+							</tr>
+							<tr>
+								<t>
+									<td colspan="5" style="color:#FFF"><br/></td>
+								</t>
+							</tr>
+						</t>
+						<t t-set="unreconsile_entry" t-value="o.journal_entry_ids.filtered(lambda x : not x.is_bank_reconcile)"/>
+						<t t-if="unreconsile_entry">
+							<tr>
+								<td colspan="5"><b>Less : Unpresented Cheques</b></td>
+							</tr>
+							<tr>
+								<t>
+									<td colspan="5" style="color:#FFF"><br/></td>
+								</t>
+							</tr>
+							<tr t-foreach="unreconsile_entry" t-as="l" >
+								<td style="width:15%"> <span t-esc="l.date"/></td>
+								<td style="width:20%"> <span t-esc="l.ref"/></td>
+								<td style="width:35%"> <span t-esc="l.name"/></td>
+								<td class="text-right" style="width:15%"> 
+									<span t-esc="l.debit"/> <span t-field="o.company_id.currency_id.symbol"/> 
+								</td>
+								<td class="text-right" style="width:15%"> 
+									<span t-esc="l.credit" /> <span t-field="o.company_id.currency_id.symbol"/>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="3" ></td>
+								<td class="text-right" style="border-top:1px solid #ccc"> <b><span t-esc="o.get_total_debit_unreconcile()"/>   <span t-field="o.company_id.currency_id.symbol"/></b></td>
+								<td class="text-right" style="border-top:1px solid #ccc"> <b><span t-esc="o.get_total_credit_unreconcile()"/><span t-field="o.company_id.currency_id.symbol"/></b></td>
+							</tr>
+							<tr>
+								<t>
+									<td colspan="5" style="color:#FFF"><br/></td>
+								</t>
+							</tr>
+						</t>
+					</table>
+					<table style="width:100%;" class='text-right'>
+						<tr>
+							<td style="width:85%"  class='text-right'><b>Balance As Per Cash Book(<span t-field="o.company_id.currency_id.name"/>)</b></td>
+							<td style="width:15%;border-top:1px solid #ccc">
+								<span t-field="o.end_balance"/>  <span t-field="o.company_id.currency_id.symbol"/>
+							</td>
+						</tr>
+					</table>
+					<div class="footer">
+						<table width="100%" style="font-size:12px;page-break-inside: avoid;">
+							<tr>
+								<td width="25%"><strong>PREPARED BY :</strong></td>
+								<td width="33%"><strong>CHECKED BY :</strong> </td>
+								<td width="37%"><strong>APPROVED BY :</strong> </td>
+							</tr>
+							<tr>
+								<td width="33%">
+									<br/><br/><br/>
+									<span t-field="user.name" /> <br/>
+									_____________________________
+								</td>
+								<td width="37%">
+									<br/><br/><br/><br/>
+									_____________________________<br/>
+
+								</td>
+								<td width="25%">
+									<br/><br/><br/><br/>
+									____________________________________<br/>
+								</td>
+							</tr>
+						</table>	
+					</div>
+				</div>
+			</t>
+		</template>
+
+		<template id="report_bank_reconcile">
+			<t t-call="web.html_container">
+				<t t-foreach="docs" t-as="o">
+					<t t-call="dev_bank_reconciliation.report_bank_reconcile_view"/>
+				</t>
+			</t>
+		</template>
+
+		<record id="bank_reconcile_conf_report" model="report.paperformat">
+			<field name="name">cork sale paper A4</field>
+			<field name="default" eval="True" />
+			<field name="format">custom</field>
+			<field name="page_height">220</field>
+			<field name="page_width">210</field>
+			<field name="orientation">Portrait</field>
+			<field name="margin_top">45</field>
+			<field name="margin_bottom">25</field>
+			<field name="margin_left">7</field>
+			<field name="margin_right">7</field>
+			<field name="header_line" eval="False" />
+			<field name="header_spacing">40</field>
+			<field name="dpi">90</field>
+		</record>
+
+		<record id="action_bank_reconcilation_report" model="ir.actions.report">
+			<field name="name">Bank Reconcilation</field>
+			<field name="model">bank.reconciliation</field>
+			<field name="report_type">qweb-pdf</field>
+			<field name="report_name">dev_bank_reconciliation.report_bank_reconcile</field>
+			<field name="report_file">dev_bank_reconciliation.report_bank_reconcile</field>
+			<field name="print_report_name">'Reconcilation - %s' % (object.name or '')</field>
+			<field name="paperformat_id" ref="dev_bank_reconciliation.bank_reconcile_conf_report"/>
+			<field name="binding_model_id" ref="model_bank_reconciliation"/>
+			<field name="binding_type">report</field>
+		</record>
+	</data>
+</odoo>
